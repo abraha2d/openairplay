@@ -79,7 +79,7 @@ class Window(QtWidgets.QWidget):
 
         # Start discovery of airplay receivers:
         log.debug("Starting discovery service...")
-        self.service_listener = discovery.AirplayServiceListener(asyncio.get_running_loop())
+        self.service_listener = discovery.AirplayServiceListener(asyncio.get_event_loop())
         self.service_listener.start()
 
         self.service_listener.receiver_added.connect(self.add_receiver)
