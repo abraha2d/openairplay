@@ -56,6 +56,20 @@ class OpenAirPlayMirroringClient(SimpleRepr):
         encryptor = cipher.encryptor()
 
         # Verify that handshake was successful
-        signature = encryptor.update(encrypted_signature) + encryptor.finalize()
+        signature = encryptor.update(encrypted_signature)
         message = srv_ecdh_public_key + ecdh_public_key
         Ed25519PublicKey.from_public_bytes(srv_public_key).verify(signature, message)
+
+        # Do 2nd /pair-verify
+        message = ecdh_public_key + srv_ecdh_public_key
+        signature = private_key.sign(message)
+        encrypted_signature = encryptor.update(signature)
+
+        await rc.exchange(
+            "POST", "/pair-verify",
+            content_type="application/octet-stream",
+            body=b'\x00\x00\x00\x00' + encrypted_signature,
+        )
+
+        # TODO: Do /fp-setup with 16 bytes, expect 142 bytes
+        # TODO: Do /fp-setup with 164 bytes, expect 32 bytes
